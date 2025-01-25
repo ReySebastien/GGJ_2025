@@ -79,21 +79,16 @@ namespace GGJ
             _direction = direction.normalized;
         }
 
-        //private void OnTriggerEnter2D(Collider2D other)
-        //{
-        //    // Logique de fusion avec la bulle du joueur
-        //    if (other.CompareTag("PlayerBubble"))
-        //    {
-        //        // Implémente la logique de fusion ici
-        //        // Par exemple, augmenter la taille de la bulle du joueur et détruire cette bulle
-        //        ReturnToPool();
-        //    }
-        //}
-
         private void ReturnToPool()
         {
+            transform.DOKill(true);
             // Retourne la bulle au pool
             _pool.Release(this);
+        }
+
+        public void Pop()
+        {
+            ReturnToPool();
         }
 
         public void Init()

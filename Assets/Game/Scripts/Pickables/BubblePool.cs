@@ -50,7 +50,7 @@ namespace GGJ
             if (_totalObjects >= _maxPoolSize)
             {
                 // Ne pas créer de nouvelles bulles si on a atteint la limite
-                Debug.LogWarning("Max pool size reached! Cannot create more objects.");
+                //Debug.LogWarning("Max pool size reached! Cannot create more objects.");
                 return null;
             }
 
@@ -85,7 +85,7 @@ namespace GGJ
             // Vérifie si la limite de taille maximale est atteinte
             if (_totalObjects >= _maxPoolSize && _pool.CountInactive == 0)
             {
-                Debug.LogWarning("Max pool size reached! Cannot spawn more bubbles.");
+                //Debug.LogWarning("Max pool size reached! Cannot spawn more bubbles.");
                 return null; // Retourne null si la limite est atteinte
             }
 
