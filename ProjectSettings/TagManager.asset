@@ -41,6 +41,24 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Glass
+    uniqueID: 3175086933
+    locked: 0
+  - name: BackBeer
+    uniqueID: 4199175417
+    locked: 0
+  - name: InBeer
+    uniqueID: 2954425833
+    locked: 0
+  - name: Beer
+    uniqueID: 1617386711
+    locked: 0
+  - name: FrontBeer
+    uniqueID: 909418025
+    locked: 0
+  - name: FrontGlass
+    uniqueID: 1602946947
+    locked: 0
   m_RenderingLayers:
   - Default
   - Light Layer 1

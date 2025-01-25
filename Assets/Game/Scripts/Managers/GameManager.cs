@@ -19,5 +19,15 @@ namespace GGJ
 
         public T GetManager<T>() where T : Manager => _managers.FirstOrDefault(m => m is T) as T;
 
+        public void Win()
+        {
+
+        }
+
+        public void Lose()
+        {
+
+        }
+
     }
 }

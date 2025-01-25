@@ -54,6 +54,8 @@ namespace GGJ
             _beer.DOKill();
             _beer.DOScaleY(_volume * _maxBeerScale, duration).SetEase(_beerVolumeAnimCurve);
 
+            InvokeCallback(() => BeerCounter.Instance.OnBeerReduced(), duration * 0.5f);
+
             _lateBeer.DOKill();
             _lateBeer.DOScaleY(_volume * _maxBeerScale, duration + 0.4f).SetEase(_beerVolumeAnimCurve).SetDelay(0.2f);
         }
