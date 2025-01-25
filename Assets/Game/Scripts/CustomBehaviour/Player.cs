@@ -1,4 +1,10 @@
 using UnityEngine;
+using DG.Tweening;
+using System.Collections;
+using System;
+using Unity.VisualScripting;
+using System.Collections.Generic;
+
 
 namespace GGJ
 {
@@ -7,7 +13,12 @@ namespace GGJ
         [SerializeField] public float baseSpeed = 5f;
         [SerializeField] private float _deadZone = 5f;
         [SerializeField] private LayerMask _camRayLayer;
-        [SerializeField]private float _gravity;
+        [SerializeField] private float _gravity;
+        [SerializeField] private float _bubbleGrowValue;
+        [SerializeField] private float _bubbleProutValue;
+        [SerializeField] private List<Sprite> _spriteList;
+        [SerializeField] private SpriteRenderer _actualSprite;
+
         [Header("Stamina Settings")]
         [SerializeField] private float _staminaMax = 10f; // Stamina maximale
         [SerializeField] private float _staminaConsumptionRate = 2f; // Consommation par seconde pendant l'accélération
@@ -25,6 +36,8 @@ namespace GGJ
         private Vector2 _gravityDirection = Vector2.up;
         private Vector2 _suckDirection;
         private Vector2 _velocity;
+        private bool _isProuting;
+        private Tweener _proutingTweener;
         
         private float _accelerationTimer = 0f; // Temps d'accélération
         private bool _isAccelerating = false; // Indique si on est en phase d'accélération
@@ -36,8 +49,10 @@ namespace GGJ
         {
             mainCamera = Camera.main;
             _rigidbody2D = GetComponent<Rigidbody2D>();
-        }
+            _actualSprite.sprite = _spriteList[0];
 
+        }
+        
         void FixedUpdate()
         {
             DepleteStamina();
@@ -83,14 +98,54 @@ namespace GGJ
         {
             _staminaCurrent = Mathf.Clamp(_staminaCurrent+(_staminaMax/_maxPickableBubble), 0, _staminaMax);
         }
-        
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0) && _staminaCurrent > 0f)
+                StartProut();
+            else if (Input.GetMouseButtonUp(0))
+                StopProut();
+
+            UpdateStaminaHehe();
+
+
+        }
+
+        private void StartProut()
+        {
+            if (_isProuting)
+                return;
+
+            _isProuting = true;
+            float remainingStamina = _staminaCurrent / _staminaMax;
+            float durationMax = (1f/_staminaConsumptionRate) * _staminaMax;
+            float duration = Mathf.Lerp(0f, durationMax, remainingStamina);
+            _proutingTweener = transform.DOScale(1f, duration)
+                .OnUpdate(() => _staminaCurrent = Mathf.Clamp(_staminaCurrent - _staminaConsumptionRate * Time.deltaTime, 0f, _staminaMax))
+                .OnComplete(() => StopProut());
+        }
+
+        private void StopProut()
+        {
+            if (!_isProuting)
+                return;
+
+            _isProuting = false;
+            if( _proutingTweener != null && _proutingTweener.IsPlaying())
+            {
+                _proutingTweener.Kill();
+                _proutingTweener = null;
+            }
+        }
+
         private void Accelerate()
         {
             // Vérifie si le joueur appuie sur le bouton "Jump" et s'il reste de la stamina
-            if (Input.GetButton("Jump") && _staminaCurrent > 0f)
+            if (Input.GetMouseButton(0) && _staminaCurrent > 0f) 
             {
                 _isAccelerating = true;
-                _accelerationTimer += Time.deltaTime;
+                _actualSprite.sprite = _spriteList[1];
+                _accelerationTimer += Time.fixedDeltaTime;
 
                 // Ajuste la durée d'accélération en fonction de la stamina restante
                 float staminaFactor = _staminaCurrent / _staminaMax; // Facteur de stamina (0 à 1)
@@ -98,6 +153,10 @@ namespace GGJ
             }
             else
             {
+                if(_gravity != 6f)
+                {
+                    _actualSprite.sprite = _spriteList[0];
+                }
                 _isAccelerating = false;
                 _accelerationTimer = 0f; // Réinitialise le timer lorsqu'on relâche "Jump"
             }
@@ -111,6 +170,75 @@ namespace GGJ
                 return _accelerationCurve.Evaluate(normalizedTime) * _propellingMaxSpeed; // Récupère la valeur sur la courbe
             }
             return 1f; // Pas d'accélération (vitesse normale)
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (!collision.TryGetComponent(out PickableBubble bubble)) 
+                return;
+
+            if (_isProuting)
+                StopProut();
+
+            RefreshSize(1);
+            RestoreStamina();
+            bubble.Pop();
+        }
+
+
+        private void RefreshSize(float value)
+        {
+            if (value < 0f)
+            {
+                transform.localScale += Vector3.one * _bubbleProutValue;
+                
+            }
+            else
+            {
+                transform.DOKill(true);
+                transform.localScale = new Vector3()
+                {
+                    x = Mathf.Clamp(transform.localScale.x + _bubbleGrowValue, 1f, 1f + _maxPickableBubble * _bubbleGrowValue ),
+                    y = Mathf.Clamp(transform.localScale.y + _bubbleGrowValue, 1f, 1f + _maxPickableBubble * _bubbleGrowValue ),
+                    z = 1f
+                };
+                transform.DOPunchScale(new Vector3(0.3f, 0.5f, 0f), 1f, 5, 0.5f);
+            }
+
+        }
+
+        private void UpdateStaminaHehe()
+        {
+            if (_staminaCurrent == 0f)
+            {
+                _gravity = 2f;
+            }
+
+            else if (_staminaCurrent < 5f && _staminaCurrent >= 2.5f)
+            {
+                _gravity = 3f;
+            }
+
+            else if( _staminaCurrent < 7.5f &&  _staminaCurrent >=5f)
+            {
+                _gravity = 4f;
+            }
+
+            else if( _staminaCurrent < 10f && _staminaCurrent >= 7.5f)
+            {
+                _gravity = 5f;
+            }
+
+            else if(_staminaCurrent == 10f)
+            {
+                _gravity = 6f;
+                _actualSprite.sprite = _spriteList[2];
+            }
+        }
+
+        public void PopPlayer()
+        {
+
         }
     }
 
