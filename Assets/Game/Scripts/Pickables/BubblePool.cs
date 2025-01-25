@@ -11,7 +11,7 @@ namespace GGJ
         [SerializeField] private int _maxPoolSize = 0; // Taille maximale du pool
 
         private ObjectPool<PickableBubble> _pool;
-        private int _activeObjects = 0; // Nombre d'objets actuellement actifs
+        private int _totalObjects = 0; // Nombre d'objets actuellement actifs + en pool
 
 
         private void Awake()
@@ -41,42 +41,49 @@ namespace GGJ
                 var bubble = CreatePooledItem();
                 _pool.Release(bubble); // Retourne immédiatement au pool
             }
+
+            _totalObjects = _initialPoolSize; // Initialiser avec la taille initiale
         }
 
         private PickableBubble CreatePooledItem()
         {
+            if (_totalObjects >= _maxPoolSize)
+            {
+                // Ne pas créer de nouvelles bulles si on a atteint la limite
+                Debug.LogWarning("Max pool size reached! Cannot create more objects.");
+                return null;
+            }
+
             // Création d'une nouvelle bulle
             var bubble = Instantiate(_bubblePrefab, _poolParent);
             bubble.GetComponent<PickableBubble>().SetPool(_pool);
+            _totalObjects++; // Incrémenter le total
             return bubble;
-        }
-
-        private void OnReturnedToPool(PickableBubble bubble)
-        {
-            // Désactivation de la bulle lorsqu'elle est retournée au pool
-            bubble.gameObject.SetActive(false);
-            _activeObjects--;
         }
 
         private void OnTakeFromPool(PickableBubble bubble)
         {
             // Activation de la bulle lorsqu'elle est prise du pool
             bubble.gameObject.SetActive(true);
-            _activeObjects++;
-
         }
+        private void OnReturnedToPool(PickableBubble bubble)
+        {
+            // Désactivation de la bulle lorsqu'elle est retournée au pool
+            bubble.gameObject.SetActive(false);
+        }
+
 
         private void OnDestroyPoolObject(PickableBubble bubble)
         {
             // Destruction de la bulle lorsque le pool est nettoyé
             Destroy(bubble);
+            _totalObjects--;
         }
 
         public PickableBubble GetBubble()
         {
-            Debug.Log(_activeObjects);
             // Vérifie si la limite de taille maximale est atteinte
-            if (_activeObjects >= _maxPoolSize)
+            if (_totalObjects >= _maxPoolSize && _pool.CountInactive == 0)
             {
                 Debug.LogWarning("Max pool size reached! Cannot spawn more bubbles.");
                 return null; // Retourne null si la limite est atteinte

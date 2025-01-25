@@ -5,7 +5,9 @@ namespace GGJ
     public class BubbleSpawner : CustomBehaviour
     {
         [SerializeField] private BubblePool _bubblePool; //Ref du script Bubble spawn
+        [Header("Délais entre chaque spawn de bulle")]
         [SerializeField] private float _spawnInterval = 1.0f; // Intervalle de temps entre chaque apparition de bulle
+        [Header("Taille de la zone de spawn des bulles")]
         [SerializeField] private Vector2 _spawnAreaSize = new Vector2(5.0f, 1.0f); // Taille de la zone de spawn
 
         private void Start()
