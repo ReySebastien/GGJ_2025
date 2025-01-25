@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace GGJ
 {
-    public class InputManager : Manager
+    public class Hair : Obstacle
     {
-
-
     }
 }

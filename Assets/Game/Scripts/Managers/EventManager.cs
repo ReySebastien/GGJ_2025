@@ -1,0 +1,228 @@
+using System;
+using System.Collections.Generic;
+using System.Collections;
+using UnityEngine;
+
+using Random = UnityEngine.Random;
+using DG.Tweening;
+using Unity.VisualScripting;
+
+namespace GGJ
+{
+    public class EventManager : Manager
+    {
+        [Header("---Parameters---")]
+        [SerializeField] private AnimationCurve _spawnRateCurve;
+        [SerializeField] private float _minSpawnRate = 15f;
+        [SerializeField] private float _maxSpawnRate = 5f;
+        [SerializeField] private float _spawnRateDuration = 120f;
+        [SerializeField] private bool _forceEvent;
+        [SerializeField] private EventType _forcedEvent;
+
+        private Dictionary<EventType, GameEvent> _getEventByType = new Dictionary<EventType, GameEvent>();
+        private List<GameEvent> _currentEvents = new List<GameEvent>();
+        private Coroutine _spawnRateCoroutine;
+        private float _timer;
+        private NonStackableEvent _playingNonStackableEvent;
+
+
+        private void Awake()
+        {
+            DictionaryInit();
+            _currentEvents = new List<GameEvent>();
+        }
+
+        private void DictionaryInit()
+        {
+            _getEventByType = new Dictionary<EventType, GameEvent>()
+            {
+                { EventType.Straw, new StrawEvent() },
+                { EventType.Autre, new AutreEvent() },
+                { EventType.AutreBis, new AutreBisEvent() },
+                { EventType.AutreBisBis, new AutreBisBisEvent() },
+                { EventType.AutreBisBisBis, new AutreBisBisBisEvent() },
+                { EventType.AutreBisBisBisBis, new AutreBisBisBisBisEvent() },
+                { EventType.GlassTilt, new GlassTilt() },
+                { EventType.Babou, new Babou() },
+            };
+        }
+
+        void Start()
+        {
+            StartSpawningEvents();
+        }
+
+        #region Spawning Events
+
+        private void StartSpawningEvents()
+        {
+            if (_spawnRateCoroutine != null)
+                StopCoroutine(_spawnRateCoroutine);
+
+            _spawnRateCoroutine = StartCoroutine(SpawningEvent());
+        }
+
+        private void StopSpawningEvents()
+        {
+            if (_spawnRateCoroutine == null)
+                return;
+
+            StopCoroutine(_spawnRateCoroutine);
+            _spawnRateCoroutine = null;
+        }
+
+        private IEnumerator SpawningEvent()
+        {
+            float delay;
+            float factor;
+
+            while (true)
+            {
+                factor = _timer / _spawnRateDuration;
+                delay = Mathf.Lerp(_minSpawnRate, _maxSpawnRate, _spawnRateCurve.Evaluate(factor));
+                yield return new WaitForSeconds(delay);
+                SpawnRandomEvent();
+                _timer = Mathf.Clamp(_timer + delay, 0f, _spawnRateDuration);
+            }
+        }
+
+        private void SpawnRandomEvent()
+        {
+            EventType eventType = _forceEvent ? _forcedEvent : (EventType)Random.Range(0, Enum.GetValues(typeof(EventType)).Length);
+            GameEvent gameEvent = GetNewEvent(eventType);
+
+            bool isStackable = gameEvent.GetIsStackable();
+
+            if (!isStackable && _playingNonStackableEvent != null)
+                return;
+
+            _currentEvents.Add(gameEvent);
+
+            if (!isStackable)
+                _playingNonStackableEvent = gameEvent as NonStackableEvent;
+
+            gameEvent.OnStarted();
+        }
+
+        public void OnEventEnded(GameEvent gameEvent)
+        {
+            if (_playingNonStackableEvent == gameEvent)
+                _playingNonStackableEvent = null;
+
+            _currentEvents.Remove(gameEvent);
+        }
+
+        #endregion
+
+        public GameEvent GetNewEvent(EventType type)
+        {
+            return _getEventByType[type];
+        }
+
+        void Update()
+        {
+            if (_currentEvents == null || _currentEvents.Count == 0)
+                return;
+
+            float delta = Time.deltaTime;
+
+            for (int i = 0; i < _currentEvents.Count; i++)
+            {
+                if (_currentEvents[i] == null)
+                    continue;
+
+                _currentEvents[i].OnUpdate(delta);
+            }
+        }
+
+        void FixedUpdate()
+        {
+            if (_currentEvents == null || _currentEvents.Count == 0)
+                return;
+
+            for (int i = 0; i < _currentEvents.Count; i++)
+            {
+                if (_currentEvents[i] == null)
+                    continue;
+
+                _currentEvents[i].OnFixedUpdate();
+            }
+        }
+
+    }
+
+    public enum EventType { Straw, Autre, AutreBis, AutreBisBis, AutreBisBisBis, AutreBisBisBisBis, GlassTilt, Babou }
+
+    public abstract class GameEvent
+    {
+        private EventManager _em;
+        protected EventManager _eventManager
+        {
+            get
+            {
+                if (_em == null)
+                    _em = GameManager.Instance.GetManager<EventManager>();
+
+                return _em;
+            }
+        }
+
+        public virtual bool GetIsStackable() => true;
+        public abstract void OnStarted();
+        public virtual void OnUpdate(float delta) { }
+        public virtual void OnFixedUpdate() { }
+        public virtual void OnStopped() => _eventManager.OnEventEnded(this);
+    }
+
+    public abstract class NonStackableEvent : GameEvent { public override bool GetIsStackable() => false; }
+
+    public class StrawEvent : NonStackableEvent
+    {
+        public override void OnStarted() => _eventManager.StartCoroutine(Strawing());
+
+        private IEnumerator Strawing()
+        {
+            yield return Straw.Instance.Show().WaitForCompletion();
+            OnStopped();
+        }
+    }
+
+    public class AutreEvent : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+    public class AutreBisEvent : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+    public class AutreBisBisEvent : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+    public class AutreBisBisBisEvent : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+    public class AutreBisBisBisBisEvent : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+    public class GlassTilt : NonStackableEvent
+    {
+        public override void OnStarted()
+        {
+            _eventManager.StartCoroutine(Tilting());
+        }
+
+        private IEnumerator Tilting()
+        {
+            yield return Beer.Instance.TitlBeer().WaitForCompletion();
+            OnStopped();
+        }
+    }
+    public class Babou : GameEvent
+    {
+        public override void OnStarted() { }
+    }
+
+}
