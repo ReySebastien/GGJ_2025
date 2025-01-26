@@ -110,7 +110,7 @@ MonoBehaviour:
   _maxLateralRange: 0.01
   _minLateralSpeed: 5
   _maxLateralSpeed: 7
-  _bubbleDespawnHeight: 10
+  _bubbleDespawnHeight: 20
 --- !u!50 &7397400533610702609
 Rigidbody2D:
   serializedVersion: 5
