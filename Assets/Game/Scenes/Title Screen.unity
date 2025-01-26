@@ -446,6 +446,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 982194967}
     - target: {fileID: 720631361524105864, guid: ea62b5c85c01ee347b5e0aa432458d30, type: 3}
+      propertyPath: _spawnAreaSize
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 720631361524105864, guid: ea62b5c85c01ee347b5e0aa432458d30, type: 3}
       propertyPath: _spawnAreaSize.x
       value: 25
       objectReference: {fileID: 0}
@@ -636,7 +640,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99e4a84858decad4fbf26b20b87f0e0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bubblePrefab: {fileID: 3554606626245170094, guid: d5c9f40f36c32f74fbacafdd743f9761, type: 3}
+  _bubblePrefab: {fileID: 3554606626245170094, guid: dbb7bd2c606d4e54caac68609fac9f0f, type: 3}
   _poolParent: {fileID: 0}
   _initialPoolSize: 150
   _maxPoolSize: 150
@@ -791,7 +795,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4bda074cb5979624fb322a743530c834, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a209d81a9f93aa746ab2dd90b855b1df, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -891,7 +895,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -107}
+  m_AnchoredPosition: {x: 0, y: -172}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1605691473
@@ -1098,7 +1102,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -275}
+  m_AnchoredPosition: {x: 0, y: -340}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1871921700
