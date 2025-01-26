@@ -14,9 +14,11 @@ namespace GGJ
         [SerializeField] private Transform _lateRotatePivot;
         [SerializeField] private Transform _beer;
         [SerializeField] private Transform _lateBeer;
+        [SerializeField] private ParticleSystem _foamParticles;
+        [SerializeField] private ParticleSystem _smallBubblesParticles;
         public static Beer Instance { get; private set; }
         private float _volume = 1f;
-
+        private float _foamInitialPosY;
 
         private void Awake()
         {
@@ -25,7 +27,7 @@ namespace GGJ
 
         void Start()
         {
-
+            _foamInitialPosY = _foamParticles.transform.localPosition.y + 0.1f;
         }
 
         void FixedUpdate()
@@ -38,7 +40,7 @@ namespace GGJ
         {
             Sequence sequence = DOTween.Sequence()
                 .Append(transform.DORotate(new Vector3(0f, 0f, -50f), 5f, RotateMode.Fast).SetEase(Ease.InOutBack))
-                .InsertCallback(1f, () => SetBeerVolume(_volume - 0.25f, 5f))
+                .InsertCallback(1f, () => ReduceBeerVolume(5f))
                 .AppendInterval(1f)
                 .Append(transform.DORotate(new Vector3(0f, 0f, 0f), 4f, RotateMode.Fast).SetEase(Ease.InOutBack));
 
@@ -55,6 +57,14 @@ namespace GGJ
             _beer.DOScaleY(_volume * _maxBeerScale, duration).SetEase(_beerVolumeAnimCurve);
 
             InvokeCallback(() => BeerCounter.Instance.OnBeerReduced(), duration * 0.5f);
+
+            if (_volume == 0f)
+            {
+                _foamParticles.Stop();
+                _smallBubblesParticles.Stop();
+            }
+            else
+                _foamParticles.transform.DOLocalMoveY(Mathf.Lerp(0.25f, _foamInitialPosY, _volume), duration).SetEase(_beerVolumeAnimCurve);
 
             _lateBeer.DOKill();
             _lateBeer.DOScaleY(_volume * _maxBeerScale, duration + 0.4f).SetEase(_beerVolumeAnimCurve).SetDelay(0.2f);

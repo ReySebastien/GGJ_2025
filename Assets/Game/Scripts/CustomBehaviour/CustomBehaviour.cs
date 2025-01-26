@@ -55,6 +55,9 @@ namespace GGJ
             while (repeat > 0f);
         }
 
+        protected virtual void Win() => _gameManager.Win();
+        protected virtual void Lose() => _gameManager.Lose();
+
         #endregion
     }
 }

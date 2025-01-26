@@ -9,6 +9,8 @@ namespace GGJ
         [SerializeField] private float _strawPosY;
         [SerializeField] private SpriteRenderer _typhoonSpriteRenderer;
         [SerializeField] private ParticleSystem _suckParticles;
+        [SerializeField] private SpriteRenderer _strawSpriteRenderer;
+        [SerializeField] private Collider2D _typhoonCollider;
 
         public static Straw Instance { get; private set; }
         private Vector3 _initialPosition;
@@ -27,6 +29,8 @@ namespace GGJ
 
         public Sequence Show()
         {
+            _strawSpriteRenderer.enabled = true;
+
             Sequence sequence = DOTween.Sequence()
             .Append(transform.DOMoveY(_strawPosY, 1.2f).SetEase(Ease.OutBack))
             .AppendInterval(1f)
@@ -35,7 +39,8 @@ namespace GGJ
             .Append(Shake())
             .InsertCallback(4.5f, StopSucking)
             .AppendInterval(1f)
-            .Append(transform.DOMoveY(_initialPosition.y, 1.2f).SetEase(Ease.InBack));
+            .Append(transform.DOMoveY(_initialPosition.y, 1.2f).SetEase(Ease.InBack))
+            .AppendCallback(() => _strawSpriteRenderer.enabled = false);
 
             return sequence;
         }
@@ -52,12 +57,14 @@ namespace GGJ
         {
             _typhoonSpriteRenderer.DOFade(0.7f, 1.4f);
             _suckParticles.Play();
+            _typhoonCollider.enabled = true;
         }
 
         private void StopSucking()
         {
             _typhoonSpriteRenderer.DOFade(0f, 0.8f);
             _suckParticles.Stop();
+            _typhoonCollider.enabled = false;
         }
     }
 }

@@ -5,7 +5,6 @@ using UnityEngine;
 
 using Random = UnityEngine.Random;
 using DG.Tweening;
-using Unity.VisualScripting;
 
 namespace GGJ
 {
@@ -37,13 +36,9 @@ namespace GGJ
             _getEventByType = new Dictionary<EventType, GameEvent>()
             {
                 { EventType.Straw, new StrawEvent() },
-                { EventType.Autre, new AutreEvent() },
-                { EventType.AutreBis, new AutreBisEvent() },
-                { EventType.AutreBisBis, new AutreBisBisEvent() },
-                { EventType.AutreBisBisBis, new AutreBisBisBisEvent() },
-                { EventType.AutreBisBisBisBis, new AutreBisBisBisBisEvent() },
+                { EventType.Tooth, new ToothEvent() },
+                { EventType.Cigarette, new CigaretteEvent() },
                 { EventType.GlassTilt, new GlassTilt() },
-                { EventType.Babou, new Babou() },
             };
         }
 
@@ -88,13 +83,16 @@ namespace GGJ
 
         private void SpawnRandomEvent()
         {
-            EventType eventType = _forceEvent ? _forcedEvent : (EventType)Random.Range(0, Enum.GetValues(typeof(EventType)).Length);
-            GameEvent gameEvent = GetNewEvent(eventType);
+            EventType eventType = 0;
+            GameEvent gameEvent = null;
+            bool isStackable = false;
 
-            bool isStackable = gameEvent.GetIsStackable();
-
-            if (!isStackable && _playingNonStackableEvent != null)
-                return;
+            do
+            {
+                eventType = _forceEvent ? _forcedEvent : (EventType)Random.Range(0, Enum.GetValues(typeof(EventType)).Length);
+                gameEvent = GetNewEvent(eventType);
+                isStackable = gameEvent.GetIsStackable();
+            } while (_playingNonStackableEvent != null && !isStackable);
 
             _currentEvents.Add(gameEvent);
 
@@ -151,7 +149,7 @@ namespace GGJ
 
     }
 
-    public enum EventType { Straw, Autre, AutreBis, AutreBisBis, AutreBisBisBis, AutreBisBisBisBis, GlassTilt, Babou }
+    public enum EventType { Straw, Tooth, Cigarette, GlassTilt }
 
     public abstract class GameEvent
     {
@@ -187,25 +185,13 @@ namespace GGJ
         }
     }
 
-    public class AutreEvent : GameEvent
+    public class ToothEvent : GameEvent
     {
-        public override void OnStarted() { }
+        public override void OnStarted() { Debug.Log("Tooth"); }
     }
-    public class AutreBisEvent : GameEvent
+    public class CigaretteEvent : GameEvent
     {
-        public override void OnStarted() { }
-    }
-    public class AutreBisBisEvent : GameEvent
-    {
-        public override void OnStarted() { }
-    }
-    public class AutreBisBisBisEvent : GameEvent
-    {
-        public override void OnStarted() { }
-    }
-    public class AutreBisBisBisBisEvent : GameEvent
-    {
-        public override void OnStarted() { }
+        public override void OnStarted() { Debug.Log("cigarette"); }
     }
     public class GlassTilt : NonStackableEvent
     {
@@ -220,9 +206,4 @@ namespace GGJ
             OnStopped();
         }
     }
-    public class Babou : GameEvent
-    {
-        public override void OnStarted() { }
-    }
-
 }
