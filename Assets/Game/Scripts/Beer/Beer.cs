@@ -16,6 +16,8 @@ namespace GGJ
         [SerializeField] private Transform _lateBeer;
         [SerializeField] private ParticleSystem _foamParticles;
         [SerializeField] private ParticleSystem _smallBubblesParticles;
+        [SerializeField] private AudioSource _burpAudio;
+
         public static Beer Instance { get; private set; }
         private float _volume = 1f;
         private float _foamInitialPosY;
@@ -68,6 +70,8 @@ namespace GGJ
 
             _lateBeer.DOKill();
             _lateBeer.DOScaleY(_volume * _maxBeerScale, duration + 0.4f).SetEase(_beerVolumeAnimCurve).SetDelay(0.2f);
+
+            InvokeCallback(() => PlayAudioRandomized(_burpAudio, 0.8f, 1f), duration + 3f);
         }
 
     }

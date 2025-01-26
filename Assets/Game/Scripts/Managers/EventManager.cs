@@ -92,7 +92,10 @@ namespace GGJ
                 eventType = _forceEvent ? _forcedEvent : (EventType)Random.Range(0, Enum.GetValues(typeof(EventType)).Length);
                 gameEvent = GetNewEvent(eventType);
                 isStackable = gameEvent.GetIsStackable();
-            } while (_playingNonStackableEvent != null && !isStackable);
+            } while (!_forceEvent && _playingNonStackableEvent != null && !isStackable);
+
+            if (_forceEvent && _playingNonStackableEvent != null && !isStackable)
+                return;
 
             _currentEvents.Add(gameEvent);
 

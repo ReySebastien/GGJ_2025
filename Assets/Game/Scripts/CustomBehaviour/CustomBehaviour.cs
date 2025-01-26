@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+using Random = UnityEngine.Random;
+
 namespace GGJ
 {
     public abstract class CustomBehaviour : MonoBehaviour
@@ -37,6 +39,13 @@ namespace GGJ
         #endregion
 
         #region methods
+
+        protected void PlayAudioRandomized(AudioSource source, float minVolue = 0.6f, float maxVolume = 0.8f, float minPitch = 0.9f, float maxPitch = 1.1f)
+        {
+            source.volume = Random.Range(minVolue, maxVolume);
+            source.pitch = Random.Range(minPitch, maxPitch);
+            source.Play();
+        }
 
         protected void Log(object message) => Debug.Log(message == null ? "NULL" : message);
 
